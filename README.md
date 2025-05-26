@@ -1,88 +1,111 @@
-# Final Report – NoSQL E-commerce Marketplace Project
+# 🧪 Postman API Testing Guide – E-commerce Backend
 
-## 1. Project Scope
+This guide walks through how to test the Node.js + MongoDB e-commerce backend using Postman.
 
-This project involves designing and implementing a NoSQL distributed database system for an e-commerce marketplace. The goal is to support scalable data operations across users, products, and orders, enabling high performance under load and dynamic schema management.
+---
 
-## 2. Technology Selection: MongoDB
+## 🚀 1. Setup Instructions
 
-**Reasons for Selection:**
+### Environment:
 
-* Flexible document schema using BSON
-* Supports embedded and referenced relationships
-* Strong community and driver support
-* Horizontal scalability (sharding, replica sets)
-* Easy integration with Node.js via Mongoose ODM
+* Base URL: `http://localhost:5000`
+* Set variable: `{{token}}` to your JWT token after login/register
 
-## 3. System Design
+---
 
-### Backend:
+## 👤 2. User Routes
 
-* **Node.js** & **Express**
-* Modular structure: routes, controllers, middleware
-* JWT authentication & role-based authorization
+### 🔹 POST /api/users/register
 
-### MongoDB Schema Design:
+* Registers a new user.
+* **Body (JSON):**
 
-* `User`: name, email, hashed password, role (admin/customer)
-* `Product`: name, price, stock, description
-* `Order`: user, product list, total price, status
+```json
+{
+  "name": "Admin Guy",
+  "email": "admin@example.com",
+  "password": "admin123",
+  "role": "admin"
+}
+```
 
-## 4. Implementation
+* **Expected:** 201 Created, returns token.
 
-* Secure JWT auth (with role-based middleware)
-* CLI scripts for:
+### 🔹 POST /api/users/login
 
-  * Viewing/editing users/products
-  * Load testing API
-* CRUD APIs: GET, POST, PUT, DELETE for products and users
-* Load testing simulates 50+ concurrent requests
+* Logs in user.
+* **Body (JSON):**
 
-## 5. Testing & Performance
+```json
+{
+  "email": "admin@example.com",
+  "password": "admin123"
+}
+```
 
-**Tools Used:** Postman, CLI scripts, `axios`, `ora`, `chalk`
+* **Expected:** JWT token
 
-**Load Testing Results:**
+### 🔹 GET /api/users/me
 
-* 50 requests handled within acceptable latency
-* MongoDB shows efficient reads and writes
+* View current user info.
+* **Headers:** `Authorization: Bearer {{token}}`
+* **Expected:** User profile JSON
 
-**Manual Testing:**
+---
 
-* Register/login flows verified
-* Token-based access control
-* Admin-only edit/delete privileges
+## 📦 3. Product Routes
 
-## 6. CLI Enhancements
+### 🔹 GET /api/products
 
-* Uses `chalk` for styled terminal UI
-* Interactive prompts with `readline`
-* Live spinner with `ora`
-* Input validation and graceful error handling
+* Fetch all products.
+* **Expected:** Array of product objects.
 
-## 7. Challenges & Solutions
+### 🔹 GET /api/products/\:id
 
-| Problem                    | Fix                                            |
-| -------------------------- | ---------------------------------------------- |
-| ESM error with chalk/ora   | Switched to chalk\@4 and added dynamic imports |
-| Spinner not showing        | Delayed axios call to allow visual loading     |
-| Role auth failed           | Decoded token and enforced admin check         |
-| CLI crashed on wrong input | Validated all CLI input fields                 |
+* Get single product by ID.
+* **Expected:** Product object
 
-## 8. Recommendations
+### 🔹 POST /api/products (Admin only)
 
-* Deploy backend via Docker or MongoDB Atlas
-* Add Redis caching for product queries
-* Support file upload (e.g. images for products)
-* Add Mocha/Jest unit tests
-* Optional: Build a React frontend
+* Create new product.
+* **Headers:** `Authorization: Bearer {{token}}`
+* **Body (JSON):**
 
-## 9. Future Work
+```json
+{
+  "name": "Sneakers",
+  "price": 99.99,
+  "stock": 50,
+  "description": "High-quality running shoes"
+}
+```
 
-* Migrate to MongoDB Atlas (cloud scalability)
-* Add analytics dashboard (track orders/products)
-* Machine learning for product recommendations
+* **Expected:** 201 Created with product JSON
 
-## 10. Summary
+### 🔹 PUT /api/products/\:id (Admin only)
 
-The project successfully demonstrates how MongoDB can be leveraged to build a fast, flexible, and interactive backend for an e-commerce marketplace. All key features were implemented and tested, and CLI tools enhanced usability for managing the platform as an admin.
+* Update product fields.
+* **Body:** Any editable field (name, price, etc.)
+
+### 🔹 DELETE /api/products/\:id (Admin only)
+
+* **Expected:** 200 OK if deleted
+
+---
+
+## 🛡 4. Auth Testing
+
+* Test protected endpoints without token → expect 401 Unauthorized.
+* Try using a customer token on admin-only endpoints → expect 403 Forbidden.
+
+---
+
+## 📌 5. Notes
+
+* Always set the token after login.
+* Use variables to manage dynamic IDs.
+* Use the CLI (`viewUsers.js`, `viewProductById.js`) to fetch valid IDs quickly.
+
+---
+
+✅ This guide ensures full API coverage and verifies both success and failure cases for your backend.
